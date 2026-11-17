@@ -3,9 +3,13 @@ import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-route
 import Layout from './components/Layout'
 import { AuthProvider } from './lib/auth'
 import { arrivedToSetPassword, supabase } from './lib/supabase'
+import Admin from './pages/Admin'
+import EssenceDetail from './pages/EssenceDetail'
 import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import MyEssences from './pages/MyEssences'
+import NewEssence from './pages/NewEssence'
 import SetPassword from './pages/SetPassword'
 
 // Quem chega por link de convite ou de recuperação vai direto definir a senha.
@@ -32,6 +36,10 @@ export default function App() {
           <Route path="/definir-senha" element={<SetPassword />} />
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
+            <Route path="/nova" element={<NewEssence />} />
+            <Route path="/essencia/:id" element={<EssenceDetail />} />
+            <Route path="/minhas" element={<MyEssences />} />
+            <Route path="/admin" element={<Admin />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

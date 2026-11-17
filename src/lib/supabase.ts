@@ -23,7 +23,10 @@ const messages: Record<string, string> = {
 }
 
 export function errorMessage(error: unknown): string {
-  const msg = error instanceof Error ? error.message : String(error)
+  const msg =
+    typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message: unknown }).message)
+      : String(error)
   if (messages[msg]) return messages[msg]
   if (/rate limit|security purposes/i.test(msg)) return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.'
   return msg
