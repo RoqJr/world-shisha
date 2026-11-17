@@ -29,14 +29,21 @@ export default function SetPassword() {
     if (password !== confirm) return setError('As senhas não conferem.')
     setBusy(true)
     setError('')
-    const { error } = await supabase.auth.updateUser({ password })
+    const { error } = await supabase.auth.updateUser({ password, data: { must_change_password: false } })
     setBusy(false)
     if (error) return setError(errorMessage(error))
     navigate('/', { replace: true })
   }
 
   return (
-    <AuthCard title="Defina sua senha" subtitle={session.user.email}>
+    <AuthCard
+      title="Defina sua senha"
+      subtitle={
+        session.user.user_metadata?.must_change_password
+          ? 'Você entrou com uma senha provisória. Crie a sua senha para continuar.'
+          : session.user.email
+      }
+    >
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         {error && <Alert kind="error">{error}</Alert>}
         <Field label="Nova senha" type="password" autoComplete="new-password" required value={password} onChange={(e) => setPassword(e.target.value)} />

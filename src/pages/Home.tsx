@@ -1,10 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import EssenceCard from '../components/EssenceCard'
+import EssenceCard, { EssenceRow } from '../components/EssenceCard'
 import { ESSENCE_SELECT, useCatalog, type Essence, type Rating } from '../lib/data'
 import { supabase } from '../lib/supabase'
 
 type Sort = 'nota' | 'avaliacoes' | 'recentes' | 'nome'
+type View = 'grade' | 'lista'
+
+function savedView(): View {
+  try {
+    return localStorage.getItem('view') === 'lista' ? 'lista' : 'grade'
+  } catch {
+    return 'grade'
+  }
+}
 
 function normalize(s: string) {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
@@ -18,6 +27,16 @@ export default function Home() {
   const [brandId, setBrandId] = useState('')
   const [tagIds, setTagIds] = useState<number[]>([])
   const [sort, setSort] = useState<Sort>('nota')
+  const [view, setView] = useState<View>(savedView)
+
+  function changeView(v: View) {
+    setView(v)
+    try {
+      localStorage.setItem('view', v)
+    } catch {
+      /* armazenamento indisponível */
+    }
+  }
 
   useEffect(() => {
     Promise.all([
@@ -112,11 +131,36 @@ export default function Home() {
           {essences.length === 0 ? 'Nenhuma essência cadastrada ainda. Que tal cadastrar a primeira?' : 'Nenhuma essência encontrada com esses filtros.'}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {visible.map((e) => (
-            <EssenceCard key={e.id} essence={e} rating={ratings.get(e.id)} />
-          ))}
-        </div>
+        <>
+          <div className="flex items-center justify-between text-sm text-neutral-500">
+            <span>{visible.length} {visible.length === 1 ? 'essência' : 'essências'}</span>
+            <div className="flex overflow-hidden rounded-xl border border-neutral-300 dark:border-neutral-700" role="group" aria-label="Visualização">
+              {(['grade', 'lista'] as const).map((v) => (
+                <button
+                  key={v}
+                  onClick={() => changeView(v)}
+                  aria-pressed={view === v}
+                  className={`px-3 py-1.5 ${view === v ? 'bg-black font-semibold text-white dark:bg-white dark:text-black' : ''}`}
+                >
+                  {v === 'grade' ? '▦ Grade' : '☰ Lista'}
+                </button>
+              ))}
+            </div>
+          </div>
+          {view === 'grade' ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {visible.map((e) => (
+                <EssenceCard key={e.id} essence={e} rating={ratings.get(e.id)} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {visible.map((e) => (
+                <EssenceRow key={e.id} essence={e} rating={ratings.get(e.id)} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   )

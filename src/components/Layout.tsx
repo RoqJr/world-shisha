@@ -34,6 +34,7 @@ export default function Layout() {
 
   if (loading) return <Spinner />
   if (!session) return <Navigate to="/login" replace />
+  if (session.user.user_metadata?.must_change_password) return <Navigate to="/definir-senha" replace />
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
     `shrink-0 rounded-full px-3 py-1.5 text-sm ${
@@ -59,12 +60,15 @@ export default function Layout() {
           <NavLink to="/nova" className={navClass}>Cadastrar</NavLink>
           <NavLink to="/minhas" className={navClass}>Minhas</NavLink>
           {isAdmin && (
-            <NavLink to="/admin" className={navClass}>
-              Aprovações
-              {pending > 0 && (
-                <span className="ml-1.5 rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-bold text-white">{pending}</span>
-              )}
-            </NavLink>
+            <>
+              <NavLink to="/admin" className={navClass}>
+                Aprovações
+                {pending > 0 && (
+                  <span className="ml-1.5 rounded-full bg-red-600 px-1.5 py-0.5 text-xs font-bold text-white">{pending}</span>
+                )}
+              </NavLink>
+              <NavLink to="/membros" className={navClass}>Membros</NavLink>
+            </>
           )}
         </nav>
       </header>

@@ -8,6 +8,7 @@ import EssenceDetail from './pages/EssenceDetail'
 import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import Login from './pages/Login'
+import Members from './pages/Members'
 import MyEssences from './pages/MyEssences'
 import NewEssence from './pages/NewEssence'
 import SetPassword from './pages/SetPassword'
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/essencia/:id" element={<EssenceDetail />} />
             <Route path="/minhas" element={<MyEssences />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/membros" element={<Members />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
