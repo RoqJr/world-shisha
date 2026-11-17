@@ -10,7 +10,14 @@ if (!url || !anonKey) {
 // Lido antes do Supabase limpar a URL: indica se a pessoa chegou por um link
 // de convite ou de recuperação de senha (nos dois casos ela precisa definir a senha).
 const linkType = new URLSearchParams(window.location.hash.slice(1)).get('type')
-export const arrivedToSetPassword = linkType === 'invite' || linkType === 'recovery'
+let pendingSetPassword = linkType === 'invite' || linkType === 'recovery'
+
+/** Retorna true só na primeira chamada após chegar por um desses links. */
+export function consumeSetPasswordLink() {
+  const result = pendingSetPassword
+  pendingSetPassword = false
+  return result
+}
 
 export const supabase = createClient(url, anonKey)
 

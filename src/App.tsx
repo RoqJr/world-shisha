@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import { AuthProvider } from './lib/auth'
-import { arrivedToSetPassword, supabase } from './lib/supabase'
+import { consumeSetPasswordLink, supabase } from './lib/supabase'
 import Admin from './pages/Admin'
 import EssenceDetail from './pages/EssenceDetail'
 import ForgotPassword from './pages/ForgotPassword'
@@ -17,7 +17,7 @@ import SetPassword from './pages/SetPassword'
 function PasswordLinkRedirect() {
   const navigate = useNavigate()
   useEffect(() => {
-    if (arrivedToSetPassword) navigate('/definir-senha', { replace: true })
+    if (consumeSetPasswordLink()) navigate('/definir-senha', { replace: true })
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') navigate('/definir-senha', { replace: true })
     })
