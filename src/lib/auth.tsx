@@ -9,6 +9,7 @@ export type Profile = {
   avatar_url: string | null
   bio: string | null
   role: 'user' | 'admin'
+  ativo: boolean
 }
 
 type AuthState = {

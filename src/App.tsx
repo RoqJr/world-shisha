@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import { AuthProvider } from './lib/auth'
 import { consumeSetPasswordLink, supabase } from './lib/supabase'
 import Admin from './pages/Admin'
+import Catalog from './pages/Catalog'
 import EditProfile from './pages/EditProfile'
 import EssenceDetail from './pages/EssenceDetail'
 import ForgotPassword from './pages/ForgotPassword'
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/recomendacoes" element={<Recommendations />} />
             <Route path="/notificacoes" element={<Notifications />} />
             <Route path="/rankings" element={<Rankings />} />
+            <Route path="/admin/catalogo" element={<Catalog />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

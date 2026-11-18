@@ -4,6 +4,7 @@ import { FunctionsHttpError } from '@supabase/supabase-js'
 import Avatar from '../components/Avatar'
 import { Alert, Button, Field } from '../components/ui'
 import { useAuth, type Profile } from '../lib/auth'
+import { callFunction } from '../lib/functions'
 import { errorMessage, supabase } from '../lib/supabase'
 
 type Mode = 'invite' | 'password'
@@ -18,10 +19,13 @@ export default function Members() {
   const { isAdmin, session } = useAuth()
   const [members, setMembers] = useState<Profile[] | null>(null)
   const [search, setSearch] = useState('')
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
   const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
   const q = normalize(search.trim())
   const visible = (members ?? []).filter((p) => !q || normalize(`${p.nome} ${p.apelido ?? ''}`).includes(q))
-  const [error, setError] = useState('')
 
   const load = useCallback(async () => {
     const { data } = await supabase.from('profiles').select('*').order('nome')
@@ -32,14 +36,32 @@ export default function Members() {
     load()
   }, [load])
 
-  async function setRole(p: Profile, role: Profile['role']) {
-    const label = role === 'admin' ? 'tornar admin' : 'remover o admin de'
-    if (!confirm(`Deseja ${label} ${p.nome}?`)) return
+  async function act(p: Profile, action: 'admin' | 'user' | 'block' | 'unblock' | 'delete') {
+    const name = p.apelido || p.nome
+    const questions = {
+      admin: `Tornar ${name} administrador?`,
+      user: `Remover o acesso de administrador de ${name}?`,
+      block: `Bloquear ${name}? A pessoa não conseguirá mais entrar, mas as avaliações dela continuam no app. Dá para desbloquear depois.`,
+      unblock: `Desbloquear ${name}? A pessoa volta a conseguir entrar.`,
+      delete: `EXCLUIR ${name} definitivamente?\n\nAs avaliações, o Top 5, as recomendações e as notificações dessa pessoa serão apagados. As essências que ela cadastrou continuam no app.\n\nIsso não pode ser desfeito.`,
+    }
+    if (!confirm(questions[action])) return
+    setBusy(true)
     setError('')
-    const { error } = await supabase.from('profiles').update({ role }).eq('id', p.id)
-    if (error) return setError(errorMessage(error))
+    let err: string | null = null
+    if (action === 'admin' || action === 'user') {
+      const { error } = await supabase.from('profiles').update({ role: action }).eq('id', p.id)
+      if (error) err = errorMessage(error)
+    } else {
+      err = await callFunction('manage-user', { user_id: p.id, action })
+    }
+    setBusy(false)
+    if (err) return setError(err)
+    setOpenId(null)
     await load()
   }
+
+  const smallBtn = 'px-3! py-2! text-xs!'
 
   return (
     <div className="flex flex-col gap-8">
@@ -62,23 +84,53 @@ export default function Members() {
           className="rounded-xl border border-neutral-300 bg-transparent px-4 py-3 outline-none focus:border-current dark:border-neutral-700"
         />
         {members && visible.length === 0 && <p className="text-sm text-neutral-500">Nenhum membro encontrado.</p>}
-        {members && visible.map((p) => (
-          <div key={p.id} className="flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 px-4 py-3 dark:border-neutral-800">
-            <Link to={`/perfil/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3">
-              <Avatar url={p.avatar_url} name={p.apelido || p.nome} size={40} />
-              <div className="min-w-0">
-                <p className="truncate font-medium">{p.apelido || p.nome}</p>
-                <p className="text-xs text-neutral-500">{p.role === 'admin' ? 'Administrador' : 'Membro'}</p>
+        {visible.map((p) => {
+          const canManage = isAdmin && p.id !== session?.user.id
+          const open = openId === p.id
+          return (
+            <div key={p.id} className={`rounded-2xl border border-neutral-200 px-4 py-3 dark:border-neutral-800 ${p.ativo ? '' : 'opacity-60'}`}>
+              <div className="flex items-center justify-between gap-3">
+                <Link to={`/perfil/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+                  <Avatar url={p.avatar_url} name={p.apelido || p.nome} size={40} />
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{p.apelido || p.nome}</p>
+                    <p className="text-xs text-neutral-500">
+                      {p.role === 'admin' ? 'Administrador' : 'Membro'}
+                      {!p.ativo && <span className="ml-1 font-semibold text-red-600 dark:text-red-400">· Bloqueado</span>}
+                    </p>
+                  </div>
+                </Link>
+                {canManage && (
+                  <button
+                    onClick={() => setOpenId(open ? null : p.id)}
+                    aria-label="Gerenciar membro"
+                    aria-expanded={open}
+                    className="rounded-xl border border-neutral-300 px-3 py-1.5 text-lg leading-none dark:border-neutral-700"
+                  >
+                    ⋯
+                  </button>
+                )}
               </div>
-            </Link>
-            {isAdmin && p.id !== session?.user.id &&
-              (p.role === 'admin' ? (
-                <Button variant="ghost" onClick={() => setRole(p, 'user')} className="px-3! py-2! text-xs!">Remover admin</Button>
-              ) : (
-                <Button variant="ghost" onClick={() => setRole(p, 'admin')} className="px-3! py-2! text-xs!">Tornar admin</Button>
-              ))}
-          </div>
-        ))}
+              {canManage && open && (
+                <div className="mt-3 flex flex-wrap gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+                  {p.role === 'admin' ? (
+                    <Button variant="ghost" disabled={busy} onClick={() => act(p, 'user')} className={smallBtn}>Remover admin</Button>
+                  ) : (
+                    <Button variant="ghost" disabled={busy} onClick={() => act(p, 'admin')} className={smallBtn}>Tornar admin</Button>
+                  )}
+                  {p.ativo ? (
+                    <Button variant="ghost" disabled={busy} onClick={() => act(p, 'block')} className={smallBtn}>Bloquear</Button>
+                  ) : (
+                    <Button variant="ghost" disabled={busy} onClick={() => act(p, 'unblock')} className={smallBtn}>Desbloquear</Button>
+                  )}
+                  <Button variant="ghost" disabled={busy} onClick={() => act(p, 'delete')} className={`${smallBtn} text-red-600! dark:text-red-400!`}>
+                    Excluir
+                  </Button>
+                </div>
+              )}
+            </div>
+          )
+        })}
       </section>
     </div>
   )

@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import Avatar from '../components/Avatar'
 import { EssencePhoto } from '../components/EssenceCard'
+import EssenceForm from '../components/EssenceForm'
 import { Stars, StarInput } from '../components/Stars'
 import StatusBadge from '../components/StatusBadge'
 import { Alert, Button } from '../components/ui'
 import { useAuth } from '../lib/auth'
-import { ESSENCE_SELECT, formatNota, useCatalog, type Essence } from '../lib/data'
+import { ESSENCE_SELECT, formatNota, updateEssence, useCatalog, type Essence } from '../lib/data'
 import { errorMessage, supabase } from '../lib/supabase'
 
 type Review = {
@@ -20,10 +21,13 @@ type Review = {
 
 export default function EssenceDetail() {
   const { id } = useParams()
-  const { session } = useAuth()
-  const { tags } = useCatalog()
+  const { session, isAdmin } = useAuth()
+  const { brands, tags } = useCatalog()
+  const navigate = useNavigate()
   const [essence, setEssence] = useState<Essence | null | undefined>(undefined)
   const [reviews, setReviews] = useState<Review[]>([])
+  const [editing, setEditing] = useState(false)
+  const [actionError, setActionError] = useState('')
 
   const userId = session!.user.id
 
@@ -53,13 +57,72 @@ export default function EssenceDetail() {
       </div>
     )
 
+  const canEdit = isAdmin
+  const canDelete = isAdmin || (essence.created_by === userId && essence.status !== 'approved')
+
+  async function remove() {
+    if (!essence) return
+    const warn = reviews.length ? `
+
+As ${reviews.length} avaliações dela também serão apagadas.` : ''
+    if (!confirm(`Excluir a essência "${essence.nome}"?${warn}
+
+Isso não pode ser desfeito.`)) return
+    setActionError('')
+    const { error } = await supabase.from('essences').delete().eq('id', essence.id)
+    if (error) return setActionError(errorMessage(error))
+    // Apaga a foto do armazenamento (se falhar, não atrapalha)
+    const path = essence.foto_url?.split('/object/public/essences/')[1]
+    if (path) await supabase.storage.from('essences').remove([decodeURIComponent(path)])
+    navigate('/', { replace: true })
+  }
+
+  if (editing) {
+    return (
+      <div className="flex flex-col gap-6">
+        <h1 className="text-2xl font-bold tracking-tight">Editar essência</h1>
+        <EssenceForm
+          brands={brands}
+          tags={tags}
+          allowNewBrand={false}
+          ignoreId={essence.id}
+          initial={{
+            brandId: essence.brand_id,
+            nome: essence.nome,
+            descricao: essence.descricao,
+            tagIds: essence.essence_tags.map((et) => et.tag_id),
+            fotoUrl: essence.foto_url,
+          }}
+          submitLabel="Salvar alterações"
+          onCancel={() => setEditing(false)}
+          onSubmit={async (values) => {
+            await updateEssence(userId, essence.id, values, false)
+            setEditing(false)
+            await load()
+          }}
+        />
+      </div>
+    )
+  }
+
   const myReview = reviews.find((r) => r.user_id === userId)
   const media = reviews.length ? reviews.reduce((s, r) => s + Number(r.nota), 0) / reviews.length : 0
   const tagNames = essence.essence_tags.map((et) => tags.find((t) => t.id === et.tag_id)?.nome).filter(Boolean)
 
   return (
     <article className="flex flex-col gap-6">
-      <Link to="/" className="text-sm text-neutral-500">← Essências</Link>
+      <div className="flex items-center justify-between gap-2">
+        <Link to="/" className="text-sm text-neutral-500">← Essências</Link>
+        {(canEdit || canDelete) && (
+          <div className="flex gap-2">
+            {canEdit && <Button variant="ghost" onClick={() => setEditing(true)} className="px-3! py-1.5! text-xs!">Editar</Button>}
+            {canDelete && (
+              <Button variant="ghost" onClick={remove} className="px-3! py-1.5! text-xs! text-red-600! dark:text-red-400!">Excluir</Button>
+            )}
+          </div>
+        )}
+      </div>
+      {actionError && <Alert kind="error">{actionError}</Alert>}
 
       <div className="flex flex-col gap-5 sm:flex-row">
         <EssencePhoto url={essence.foto_url} className="rounded-2xl sm:w-64" />
@@ -215,7 +278,7 @@ function RecommendPanel({ essenceId, userId }: { essenceId: number; userId: stri
     setOpen(true)
     setSent('')
     if (members.length) return
-    const { data } = await supabase.from('profiles').select('id, nome, apelido, avatar_url').neq('id', userId).order('nome')
+    const { data } = await supabase.from('profiles').select('id, nome, apelido, avatar_url').neq('id', userId).eq('ativo', true).order('nome')
     setMembers((data ?? []) as Member[])
   }
 
