@@ -110,7 +110,7 @@ export default function Profile() {
           Conquistas <span className="text-neutral-500">({earned.size}/{achievements.length})</span>
         </h2>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {achievements.map((a) => {
+          {[...achievements].sort((x, y) => Number(earned.has(y.code)) - Number(earned.has(x.code)) || x.ordem - y.ordem).map((a) => {
             const on = earned.has(a.code)
             return (
               <div

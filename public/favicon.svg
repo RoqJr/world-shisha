@@ -1,17 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#000"/><g transform="translate(256 270) scale(1) translate(-256 -270)"><g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
-  <!-- fumaça -->
-  <path d="M236 128c-18-20 14-34-4-56" stroke-width="12" opacity=".85"/>
-  <path d="M278 128c-18-20 14-34-4-56" stroke-width="12" opacity=".85"/>
-  <!-- bowl -->
-  <path d="M206 150h100l-24 44h-52z" fill="#fff" stroke-width="10"/>
-  <!-- prato -->
-  <ellipse cx="256" cy="210" rx="72" ry="12" fill="#fff" stroke="none"/>
-  <!-- haste -->
-  <path d="M256 222v96" stroke-width="20"/>
-  <path d="M236 262h40" stroke-width="12"/>
-  <!-- mangueira -->
-  <path d="M276 262c64 4 92 40 86 96s-8 70 24 84" stroke-width="10"/>
-  <!-- base -->
-  <path d="M232 318h48l6 22c46 14 62 50 54 82-8 34-42 48-84 48s-76-14-84-48c-8-32 8-68 54-82z" fill="#fff" stroke-width="8"/>
-</g>
-</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#000"/><g transform="translate(256 256) scale(0.92) translate(-256 -256)">
+<g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M292 62c-26-16-66-6-62 20 4 24 58 18 58 46 0 28-42 34-64 16" stroke-width="22"/>
+  <path d="M124 214h264" stroke-width="30"/>
+  <path d="M150 214l52 150 54-112 54 112 52-150" stroke-width="30"/>
+  <path d="M202 382h108" stroke-width="22"/>
+  <path d="M256 382v52M220 446h72" stroke-width="22"/>
+</g></g></svg>

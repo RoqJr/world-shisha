@@ -1,3 +1,4 @@
+import Logo from './Logo'
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react'
 
 export function Field({ label, ...props }: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
@@ -41,6 +42,7 @@ export function AuthCard({ title, subtitle, children }: { title: string; subtitl
   return (
     <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-8 px-4 py-10">
       <header className="text-center">
+        <Logo size={56} className="mx-auto mb-3" />
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">World Shisha</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight">{title}</h1>
         {subtitle && <p className="mt-2 text-sm text-neutral-500">{subtitle}</p>}

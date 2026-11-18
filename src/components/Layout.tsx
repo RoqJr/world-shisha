@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth'
 import { useUnreadCount } from '../lib/notifications'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../lib/theme'
+import Logo from './Logo'
 import { Spinner } from './ui'
 
 /** Quantas essências aguardam aprovação (só para admins). */
@@ -83,7 +84,11 @@ export default function Layout() {
     `flex items-center gap-3 rounded-xl px-3 py-3 ${
       isActive ? 'bg-black font-semibold text-white dark:bg-white dark:text-black' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'
     }`
-  const buttonClass = 'flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left hover:bg-neutral-100 dark:hover:bg-neutral-900'
+  const iconButton = 'flex flex-1 items-center justify-center rounded-xl py-3 hover:bg-neutral-100 dark:hover:bg-neutral-900'
+  const iconLink = ({ isActive }: { isActive: boolean }) =>
+    `flex flex-1 items-center justify-center rounded-xl py-3 ${
+      isActive ? 'bg-black text-white dark:bg-white dark:text-black' : 'hover:bg-neutral-100 dark:hover:bg-neutral-900'
+    }`
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
@@ -94,7 +99,9 @@ export default function Layout() {
           </svg>
           {pending > 0 && <span className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-red-600" />}
         </button>
-        <Link to="/" className="flex-1 text-lg font-bold tracking-tight">World Shisha</Link>
+        <Link to="/" className="flex flex-1 items-center gap-2 text-lg font-bold tracking-tight">
+          <Logo size={26} /> World Shisha
+        </Link>
         <Link to="/notificacoes" aria-label={unread ? `Notificações (${unread} novas)` : 'Notificações'} className="relative rounded-xl p-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-900">
           <Icon name="bell" />
           {unread > 0 && (
@@ -120,17 +127,17 @@ export default function Layout() {
         inert={!open}
       >
         <div className="mb-3 border-b border-neutral-200 px-3 pb-4 pt-2 dark:border-neutral-800">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">World Shisha</p>
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-neutral-500">
+            <Logo size={18} /> World Shisha
+          </p>
           <p className="mt-2 truncate font-semibold">{profile?.apelido || profile?.nome}</p>
           {isAdmin && <p className="text-xs text-neutral-500">Administrador</p>}
         </div>
 
         <NavLink to="/" end className={itemClass}><Icon name="home" /> Essências</NavLink>
-        <NavLink to="/nova" className={itemClass}><Icon name="plus" /> Cadastrar essência</NavLink>
         <NavLink to="/rankings" className={itemClass}><Icon name="trophy" /> Rankings</NavLink>
         <NavLink to="/recomendacoes" className={itemClass}><Icon name="send" /> Recomendações</NavLink>
         <NavLink to="/membros" className={itemClass}><Icon name="users" /> Membros</NavLink>
-        <NavLink to="/perfil" end className={itemClass}><Icon name="user" /> Meu perfil</NavLink>
 
         {isAdmin && (
           <>
@@ -142,11 +149,16 @@ export default function Layout() {
           </>
         )}
 
-        <div className="mt-auto border-t border-neutral-200 pt-2 dark:border-neutral-800">
-          <button onClick={toggle} className={buttonClass}>
-            <Icon name={theme === 'dark' ? 'sun' : 'moon'} /> {theme === 'dark' ? 'Tema claro' : 'Tema escuro'}
+        <div className="mt-auto flex gap-1 border-t border-neutral-200 pt-2 dark:border-neutral-800">
+          <NavLink to="/perfil" end className={iconLink} aria-label="Meu perfil" title="Meu perfil">
+            <Icon name="user" />
+          </NavLink>
+          <button onClick={toggle} className={iconButton} aria-label={theme === 'dark' ? 'Tema claro' : 'Tema escuro'} title={theme === 'dark' ? 'Tema claro' : 'Tema escuro'}>
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
           </button>
-          <button onClick={signOut} className={buttonClass}><Icon name="logout" /> Sair</button>
+          <button onClick={signOut} className={iconButton} aria-label="Sair" title="Sair">
+            <Icon name="logout" />
+          </button>
         </div>
       </aside>
 
