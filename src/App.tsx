@@ -7,6 +7,7 @@ import Admin from './pages/Admin'
 import Catalog from './pages/Catalog'
 import EditProfile from './pages/EditProfile'
 import EssenceDetail from './pages/EssenceDetail'
+import Feed from './pages/Feed'
 import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
 import Login from './pages/Login'
@@ -18,6 +19,7 @@ import Profile from './pages/Profile'
 import Rankings from './pages/Rankings'
 import Recommendations from './pages/Recommendations'
 import SetPassword from './pages/SetPassword'
+import Wishlist from './pages/Wishlist'
 
 // Quem chega por link de convite ou de recuperação vai direto definir a senha.
 function PasswordLinkRedirect() {
@@ -42,7 +44,9 @@ export default function App() {
           <Route path="/esqueci-senha" element={<ForgotPassword />} />
           <Route path="/definir-senha" element={<SetPassword />} />
           <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Feed />} />
+            <Route path="/essencias" element={<Home />} />
+            <Route path="/quero-provar" element={<Wishlist />} />
             <Route path="/nova" element={<NewEssence />} />
             <Route path="/essencia/:id" element={<EssenceDetail />} />
             <Route path="/minhas" element={<MyEssences />} />

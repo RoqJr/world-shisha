@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import EssenceCard, { EssenceRow } from '../components/EssenceCard'
 import { ESSENCE_SELECT, useCatalog, type Essence, type Rating } from '../lib/data'
 import { supabase } from '../lib/supabase'
+import { useWishlist } from '../lib/wishlist'
 
 type Sort = 'nota' | 'avaliacoes' | 'recentes' | 'nome'
 type View = 'grade' | 'lista'
@@ -28,6 +29,7 @@ export default function Home() {
   const [tagIds, setTagIds] = useState<number[]>([])
   const [sort, setSort] = useState<Sort>('nota')
   const [view, setView] = useState<View>(savedView)
+  const wishlist = useWishlist()
 
   function changeView(v: View) {
     setView(v)
@@ -150,13 +152,13 @@ export default function Home() {
           {view === 'grade' ? (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {visible.map((e) => (
-                <EssenceCard key={e.id} essence={e} rating={ratings.get(e.id)} />
+                <EssenceCard key={e.id} essence={e} rating={ratings.get(e.id)} wished={wishlist.ids.has(e.id)} onWish={() => wishlist.toggle(e.id)} />
               ))}
             </div>
           ) : (
             <div className="flex flex-col gap-2">
               {visible.map((e) => (
-                <EssenceRow key={e.id} essence={e} rating={ratings.get(e.id)} />
+                <EssenceRow key={e.id} essence={e} rating={ratings.get(e.id)} wished={wishlist.ids.has(e.id)} onWish={() => wishlist.toggle(e.id)} />
               ))}
             </div>
           )}

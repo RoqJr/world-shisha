@@ -1,13 +1,13 @@
-/** Logo: o W forma o corpo do rosh e o S sobe como fumaça. Usa a cor do texto. */
+/** Logo: as letras W e S lado a lado, deformadas para formar um rosh tipo phunnel. Usa a cor do texto. */
 export default function Logo({ size = 28, className = '' }: { size?: number; className?: string }) {
   return (
-    <svg viewBox="40 30 432 440" width={size} height={size} className={className} aria-hidden>
+    <svg viewBox="28 100 456 350" width={size} height={size} className={className} aria-hidden>
       <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M292 62c-26-16-66-6-62 20 4 24 58 18 58 46 0 28-42 34-64 16" strokeWidth="22" />
-        <path d="M124 214h264" strokeWidth="30" />
-        <path d="M150 214l52 150 54-112 54 112 52-150" strokeWidth="30" />
-        <path d="M202 382h108" strokeWidth="22" />
-        <path d="M256 382v52M220 446h72" strokeWidth="22" />
+        <path d="M48 129.4H464" strokeWidth="34" />
+        <path d="M76.0 160.0L190.4 330.0L180.5 224.6L232.4 330.0L247.0 160.0" strokeWidth="34" />
+        <path d="M434.1 163.4L430.3 161.8L425.5 160.4L419.7 159.2L413.1 158.2L405.8 157.4L397.8 156.9L389.3 156.6L380.4 156.7L371.2 157.0L361.8 157.6L352.3 158.5L342.9 159.8L333.6 161.4L324.6 163.4L316.0 165.7L307.9 168.4L300.5 171.6L293.7 175.1L287.8 179.1L282.7 183.5L278.6 188.4L275.5 193.7L273.5 199.6L272.5 205.9L272.5 205.9L272.9 210.9L274.6 215.4L277.3 219.3L281.1 222.8L285.7 225.9L290.9 228.6L296.8 231.1L303.1 233.3L309.7 235.3L316.6 237.3L323.6 239.1L330.6 241.0L337.4 242.9L344.1 244.8L350.3 247.0L356.0 249.3L361.0 252.0L365.2 254.9L368.6 258.2L370.9 262.0L372.0 266.2L371.9 271.0L370.4 276.4L367.6 282.4L363.8 288.5L359.4 294.2L354.8 299.3L349.9 304.0L344.8 308.2L339.6 311.9L334.3 315.2L329.1 318.0L323.9 320.4L318.8 322.3L313.7 323.8L308.8 324.9L304.0 325.5L299.3 325.8L294.8 325.6L290.4 325.0L286.2 324.0L282.3 322.6L278.5 320.8L275.0 318.6L271.9 316.1L269.0 313.1L266.6 309.8L264.7 306.2" strokeWidth="34" />
+        <path d="M181 367.4H331" strokeWidth="27.200000000000003" />
+        <path d="M256 367.4V419.4M226 427.4H286" strokeWidth="27.200000000000003" />
       </g>
     </svg>
   )

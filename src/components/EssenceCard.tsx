@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { formatNota, type Essence, type Rating } from '../lib/data'
 import { Stars } from './Stars'
+import { WishIcon } from './WishButton'
+
+type CardProps = { essence: Essence; rating?: Rating; wished?: boolean; onWish?: () => void }
 
 export function EssencePhoto({ url, className = '' }: { url: string | null; className?: string }) {
   return url ? (
@@ -13,7 +16,7 @@ export function EssencePhoto({ url, className = '' }: { url: string | null; clas
 }
 
 /** Linha da visualização em lista: foto pequena à esquerda. */
-export function EssenceRow({ essence, rating }: { essence: Essence; rating?: Rating }) {
+export function EssenceRow({ essence, rating, wished, onWish }: CardProps) {
   return (
     <Link to={`/essencia/${essence.id}`} className="flex items-center gap-3 rounded-2xl border border-neutral-200 p-2 pr-4 dark:border-neutral-800">
       <EssencePhoto url={essence.foto_url} className="w-16! shrink-0 rounded-xl text-2xl" />
@@ -31,14 +34,22 @@ export function EssenceRow({ essence, rating }: { essence: Essence; rating?: Rat
           <p>Sem avaliações</p>
         )}
       </div>
+      {onWish && <WishIcon on={!!wished} onToggle={onWish} />}
     </Link>
   )
 }
 
-export default function EssenceCard({ essence, rating }: { essence: Essence; rating?: Rating }) {
+export default function EssenceCard({ essence, rating, wished, onWish }: CardProps) {
   return (
     <Link to={`/essencia/${essence.id}`} className="flex flex-col overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800">
-      <EssencePhoto url={essence.foto_url} />
+      <div className="relative">
+        <EssencePhoto url={essence.foto_url} />
+        {onWish && (
+          <div className="absolute right-2 top-2">
+            <WishIcon on={!!wished} onToggle={onWish} />
+          </div>
+        )}
+      </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
         <p className="text-xs uppercase tracking-wide text-neutral-500">{essence.brand?.nome}</p>
         <p className="font-semibold leading-tight">{essence.nome}</p>

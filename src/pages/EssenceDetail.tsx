@@ -6,7 +6,9 @@ import EssenceForm from '../components/EssenceForm'
 import { Stars, StarInput } from '../components/Stars'
 import StatusBadge from '../components/StatusBadge'
 import { Alert, Button } from '../components/ui'
+import { WishButton } from '../components/WishButton'
 import { useAuth } from '../lib/auth'
+import { useWishlist } from '../lib/wishlist'
 import { ESSENCE_SELECT, formatNota, updateEssence, useCatalog, type Essence } from '../lib/data'
 import { errorMessage, supabase } from '../lib/supabase'
 
@@ -27,6 +29,7 @@ export default function EssenceDetail() {
   const [essence, setEssence] = useState<Essence | null | undefined>(undefined)
   const [reviews, setReviews] = useState<Review[]>([])
   const [editing, setEditing] = useState(false)
+  const wishlist = useWishlist()
   const [actionError, setActionError] = useState('')
 
   const userId = session!.user.id
@@ -53,7 +56,7 @@ export default function EssenceDetail() {
     return (
       <div className="py-10 text-center">
         <p>Essência não encontrada.</p>
-        <Link to="/" className="mt-4 inline-block text-sm underline underline-offset-4">Voltar</Link>
+        <Link to="/essencias" className="mt-4 inline-block text-sm underline underline-offset-4">Voltar</Link>
       </div>
     )
 
@@ -74,7 +77,7 @@ Isso não pode ser desfeito.`)) return
     // Apaga a foto do armazenamento (se falhar, não atrapalha)
     const path = essence.foto_url?.split('/object/public/essences/')[1]
     if (path) await supabase.storage.from('essences').remove([decodeURIComponent(path)])
-    navigate('/', { replace: true })
+    navigate('/essencias', { replace: true })
   }
 
   if (editing) {
@@ -112,7 +115,7 @@ Isso não pode ser desfeito.`)) return
   return (
     <article className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-2">
-        <Link to="/" className="text-sm text-neutral-500">← Essências</Link>
+        <Link to="/essencias" className="text-sm text-neutral-500">← Essências</Link>
         {(canEdit || canDelete) && (
           <div className="flex gap-2">
             {canEdit && <Button variant="ghost" onClick={() => setEditing(true)} className="px-3! py-1.5! text-xs!">Editar</Button>}
@@ -144,6 +147,11 @@ Isso não pode ser desfeito.`)) return
               <span className="text-sm text-neutral-500">
                 ({reviews.length} {reviews.length === 1 ? 'avaliação' : 'avaliações'})
               </span>
+            </div>
+          )}
+          {essence.status === 'approved' && !myReview && (
+            <div>
+              <WishButton on={wishlist.ids.has(essence.id)} onToggle={() => wishlist.toggle(essence.id)} />
             </div>
           )}
           {tagNames.length > 0 && (

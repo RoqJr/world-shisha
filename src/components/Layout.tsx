@@ -47,6 +47,7 @@ const icons: Record<string, ReactNode> = {
   bell: <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />,
   trophy: <path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3" />,
   tag: <path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01" />,
+  bookmark: <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />,
   logout: <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />,
 }
 
@@ -134,7 +135,9 @@ export default function Layout() {
           {isAdmin && <p className="text-xs text-neutral-500">Administrador</p>}
         </div>
 
-        <NavLink to="/" end className={itemClass}><Icon name="home" /> Essências</NavLink>
+        <NavLink to="/" end className={itemClass}><Icon name="home" /> Início</NavLink>
+        <NavLink to="/essencias" className={itemClass}><Icon name="list" /> Essências</NavLink>
+        <NavLink to="/quero-provar" className={itemClass}><Icon name="bookmark" /> Quero provar</NavLink>
         <NavLink to="/rankings" className={itemClass}><Icon name="trophy" /> Rankings</NavLink>
         <NavLink to="/recomendacoes" className={itemClass}><Icon name="send" /> Recomendações</NavLink>
         <NavLink to="/membros" className={itemClass}><Icon name="users" /> Membros</NavLink>
