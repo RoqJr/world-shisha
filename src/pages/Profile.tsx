@@ -83,12 +83,12 @@ export default function Profile() {
           {profile.role === 'admin' && <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-neutral-500">Administrador</p>}
         </div>
         {profile.bio && <p className="max-w-md whitespace-pre-line text-neutral-700 dark:text-neutral-300">{profile.bio}</p>}
-        {isMe && (
-          <div className="flex flex-wrap justify-center gap-2">
-            <Link to="/perfil/editar" className="rounded-xl border border-current px-4 py-2 text-sm font-semibold">Editar perfil</Link>
-            <Link to="/minhas" className="rounded-xl border border-current px-4 py-2 text-sm font-semibold">Minhas essências</Link>
-          </div>
-        )}
+        <div className="flex flex-wrap justify-center gap-2">
+          {isMe && <Link to="/perfil/editar" className="rounded-xl border border-current px-4 py-2 text-sm font-semibold">Editar perfil</Link>}
+          <Link to={isMe ? '/minhas' : `/perfil/${id}/essencias`} className="rounded-xl border border-current px-4 py-2 text-sm font-semibold">
+            {isMe ? 'Minhas essências' : 'Essências cadastradas'}
+          </Link>
+        </div>
       </section>
 
       <section className="grid grid-cols-2 gap-2 sm:grid-cols-4">

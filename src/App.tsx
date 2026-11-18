@@ -50,6 +50,7 @@ export default function App() {
             <Route path="/perfil" element={<Profile />} />
             <Route path="/perfil/editar" element={<EditProfile />} />
             <Route path="/perfil/:id" element={<Profile />} />
+            <Route path="/perfil/:id/essencias" element={<MyEssences />} />
             <Route path="/recomendacoes" element={<Recommendations />} />
             <Route path="/notificacoes" element={<Notifications />} />
             <Route path="/rankings" element={<Rankings />} />

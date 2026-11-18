@@ -17,6 +17,10 @@ function randomPassword() {
 export default function Members() {
   const { isAdmin, session } = useAuth()
   const [members, setMembers] = useState<Profile[] | null>(null)
+  const [search, setSearch] = useState('')
+  const normalize = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  const q = normalize(search.trim())
+  const visible = (members ?? []).filter((p) => !q || normalize(`${p.nome} ${p.apelido ?? ''}`).includes(q))
   const [error, setError] = useState('')
 
   const load = useCallback(async () => {
@@ -50,7 +54,15 @@ export default function Members() {
         <h2 className={isAdmin ? 'text-lg font-semibold' : 'text-2xl font-bold tracking-tight'}>Membros {members && <span className="text-neutral-500">({members.length})</span>}</h2>
         {error && <Alert kind="error">{error}</Alert>}
         {members === null && <p className="text-sm text-neutral-500">Carregando…</p>}
-        {members?.map((p) => (
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar membro por nome ou apelido…"
+          className="rounded-xl border border-neutral-300 bg-transparent px-4 py-3 outline-none focus:border-current dark:border-neutral-700"
+        />
+        {members && visible.length === 0 && <p className="text-sm text-neutral-500">Nenhum membro encontrado.</p>}
+        {members && visible.map((p) => (
           <div key={p.id} className="flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 px-4 py-3 dark:border-neutral-800">
             <Link to={`/perfil/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3">
               <Avatar url={p.avatar_url} name={p.apelido || p.nome} size={40} />
