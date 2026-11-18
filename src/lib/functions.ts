@@ -7,9 +7,9 @@ export async function callFunction(name: string, body: Record<string, unknown>):
   if (error) {
     if (error instanceof FunctionsHttpError) {
       const res = await error.context.json().catch(() => null)
-      if (res?.error) return res.error
+      if (res?.error) return errorMessage(res.error)
     }
     return errorMessage(error)
   }
-  return data?.error ?? null
+  return data?.error ? errorMessage(data.error) : null
 }

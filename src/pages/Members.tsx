@@ -160,7 +160,7 @@ function InviteForm({ onCreated }: { onCreated: () => Promise<void> }) {
       let msg = errorMessage(error)
       if (error instanceof FunctionsHttpError) {
         const body = await error.context.json().catch(() => null)
-        if (body?.error) msg = body.error
+        if (body?.error) msg = errorMessage(body.error)
       }
       return setError(msg)
     }
