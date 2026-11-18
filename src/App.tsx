@@ -4,6 +4,7 @@ import Layout from './components/Layout'
 import { AuthProvider } from './lib/auth'
 import { consumeSetPasswordLink, supabase } from './lib/supabase'
 import Admin from './pages/Admin'
+import EditProfile from './pages/EditProfile'
 import EssenceDetail from './pages/EssenceDetail'
 import ForgotPassword from './pages/ForgotPassword'
 import Home from './pages/Home'
@@ -11,6 +12,9 @@ import Login from './pages/Login'
 import Members from './pages/Members'
 import MyEssences from './pages/MyEssences'
 import NewEssence from './pages/NewEssence'
+import Notifications from './pages/Notifications'
+import Profile from './pages/Profile'
+import Recommendations from './pages/Recommendations'
 import SetPassword from './pages/SetPassword'
 
 // Quem chega por link de convite ou de recuperação vai direto definir a senha.
@@ -42,6 +46,11 @@ export default function App() {
             <Route path="/minhas" element={<MyEssences />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/membros" element={<Members />} />
+            <Route path="/perfil" element={<Profile />} />
+            <Route path="/perfil/editar" element={<EditProfile />} />
+            <Route path="/perfil/:id" element={<Profile />} />
+            <Route path="/recomendacoes" element={<Recommendations />} />
+            <Route path="/notificacoes" element={<Notifications />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

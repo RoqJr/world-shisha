@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { FunctionsHttpError } from '@supabase/supabase-js'
+import Avatar from '../components/Avatar'
 import { Alert, Button, Field } from '../components/ui'
 import { useAuth, type Profile } from '../lib/auth'
 import { errorMessage, supabase } from '../lib/supabase'
@@ -14,7 +15,7 @@ function randomPassword() {
 }
 
 export default function Members() {
-  const { isAdmin, loading, session } = useAuth()
+  const { isAdmin, session } = useAuth()
   const [members, setMembers] = useState<Profile[] | null>(null)
   const [error, setError] = useState('')
 
@@ -24,10 +25,8 @@ export default function Members() {
   }, [])
 
   useEffect(() => {
-    if (isAdmin) load()
-  }, [isAdmin, load])
-
-  if (!loading && !isAdmin) return <Navigate to="/" replace />
+    load()
+  }, [load])
 
   async function setRole(p: Profile, role: Profile['role']) {
     const label = role === 'admin' ? 'tornar admin' : 'remover o admin de'
@@ -40,22 +39,27 @@ export default function Members() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">Novo membro</h1>
-        <InviteForm onCreated={load} />
-      </section>
+      {isAdmin && (
+        <section className="flex flex-col gap-4">
+          <h1 className="text-2xl font-bold tracking-tight">Novo membro</h1>
+          <InviteForm onCreated={load} />
+        </section>
+      )}
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Membros {members && <span className="text-neutral-500">({members.length})</span>}</h2>
+        <h2 className={isAdmin ? 'text-lg font-semibold' : 'text-2xl font-bold tracking-tight'}>Membros {members && <span className="text-neutral-500">({members.length})</span>}</h2>
         {error && <Alert kind="error">{error}</Alert>}
         {members === null && <p className="text-sm text-neutral-500">Carregando…</p>}
         {members?.map((p) => (
           <div key={p.id} className="flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 px-4 py-3 dark:border-neutral-800">
-            <div className="min-w-0">
-              <p className="truncate font-medium">{p.apelido || p.nome}</p>
-              <p className="text-xs text-neutral-500">{p.role === 'admin' ? 'Administrador' : 'Membro'}</p>
-            </div>
-            {p.id !== session?.user.id &&
+            <Link to={`/perfil/${p.id}`} className="flex min-w-0 flex-1 items-center gap-3">
+              <Avatar url={p.avatar_url} name={p.apelido || p.nome} size={40} />
+              <div className="min-w-0">
+                <p className="truncate font-medium">{p.apelido || p.nome}</p>
+                <p className="text-xs text-neutral-500">{p.role === 'admin' ? 'Administrador' : 'Membro'}</p>
+              </div>
+            </Link>
+            {isAdmin && p.id !== session?.user.id &&
               (p.role === 'admin' ? (
                 <Button variant="ghost" onClick={() => setRole(p, 'user')} className="px-3! py-2! text-xs!">Remover admin</Button>
               ) : (

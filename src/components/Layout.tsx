@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, Navigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { useUnreadCount } from '../lib/notifications'
 import { supabase } from '../lib/supabase'
 import { useTheme } from '../lib/theme'
 import { Spinner } from './ui'
@@ -40,6 +41,9 @@ const icons: Record<string, ReactNode> = {
   users: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />,
   moon: <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />,
   sun: <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10M12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />,
+  user: <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" />,
+  send: <path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" />,
+  bell: <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" />,
   logout: <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />,
 }
 
@@ -56,6 +60,7 @@ export default function Layout() {
   const { session, profile, isAdmin, loading, signOut } = useAuth()
   const { theme, toggle } = useTheme()
   const pending = usePendingCount(isAdmin)
+  const unread = useUnreadCount(!!session)
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
 
@@ -87,7 +92,15 @@ export default function Layout() {
           </svg>
           {pending > 0 && <span className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-red-600" />}
         </button>
-        <Link to="/" className="text-lg font-bold tracking-tight">World Shisha</Link>
+        <Link to="/" className="flex-1 text-lg font-bold tracking-tight">World Shisha</Link>
+        <Link to="/notificacoes" aria-label={unread ? `Notificações (${unread} novas)` : 'Notificações'} className="relative rounded-xl p-2.5 hover:bg-neutral-100 dark:hover:bg-neutral-900">
+          <Icon name="bell" />
+          {unread > 0 && (
+            <span className="absolute right-0.5 top-0.5 min-w-5 rounded-full bg-red-600 px-1 py-0.5 text-center text-[11px] font-bold leading-none text-white">
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+        </Link>
       </header>
 
       {/* Menu lateral */}
@@ -113,6 +126,9 @@ export default function Layout() {
         <NavLink to="/" end className={itemClass}><Icon name="home" /> Essências</NavLink>
         <NavLink to="/nova" className={itemClass}><Icon name="plus" /> Cadastrar essência</NavLink>
         <NavLink to="/minhas" className={itemClass}><Icon name="list" /> Minhas essências</NavLink>
+        <NavLink to="/recomendacoes" className={itemClass}><Icon name="send" /> Recomendações</NavLink>
+        <NavLink to="/membros" className={itemClass}><Icon name="users" /> Membros</NavLink>
+        <NavLink to="/perfil" end className={itemClass}><Icon name="user" /> Meu perfil</NavLink>
 
         {isAdmin && (
           <>
@@ -120,7 +136,6 @@ export default function Layout() {
             <NavLink to="/admin" className={itemClass}>
               <Icon name="check" /> <span className="flex-1">Aprovações</span> <Badge n={pending} />
             </NavLink>
-            <NavLink to="/membros" className={itemClass}><Icon name="users" /> Membros</NavLink>
           </>
         )}
 

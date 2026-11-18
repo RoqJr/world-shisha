@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import Avatar from '../components/Avatar'
 import { EssencePhoto } from '../components/EssenceCard'
 import { Stars, StarInput } from '../components/Stars'
 import StatusBadge from '../components/StatusBadge'
@@ -14,7 +15,7 @@ type Review = {
   nota: number
   observacao: string | null
   updated_at: string
-  profile: { nome: string; apelido: string | null } | null
+  profile: { nome: string; apelido: string | null; avatar_url: string | null } | null
 }
 
 export default function EssenceDetail() {
@@ -31,7 +32,7 @@ export default function EssenceDetail() {
       supabase.from('essences').select(ESSENCE_SELECT).eq('id', Number(id)).maybeSingle(),
       supabase
         .from('reviews')
-        .select('id, user_id, nota, observacao, updated_at, profile:profiles(nome, apelido)')
+        .select('id, user_id, nota, observacao, updated_at, profile:profiles(nome, apelido, avatar_url)')
         .eq('essence_id', Number(id))
         .order('updated_at', { ascending: false }),
     ])
@@ -96,6 +97,7 @@ export default function EssenceDetail() {
       {essence.status === 'approved' && (
         <>
           <ReviewForm key={myReview?.id ?? 'new'} essenceId={essence.id} userId={userId} existing={myReview} onSaved={load} />
+          <RecommendPanel essenceId={essence.id} userId={userId} />
 
           <section className="flex flex-col gap-3">
             <h2 className="text-lg font-semibold">Avaliações</h2>
@@ -103,7 +105,10 @@ export default function EssenceDetail() {
             {reviews.map((r) => (
               <div key={r.id} className="rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium">{r.profile?.apelido || r.profile?.nome || 'Membro'}</span>
+                  <Link to={`/perfil/${r.user_id}`} className="flex min-w-0 items-center gap-2 font-medium">
+                    <Avatar url={r.profile?.avatar_url} name={r.profile?.apelido || r.profile?.nome || 'Membro'} size={28} />
+                    <span className="truncate">{r.profile?.apelido || r.profile?.nome || 'Membro'}</span>
+                  </Link>
                   <span className="flex items-center gap-1.5 text-sm tabular-nums">
                     <Stars value={Number(r.nota)} size={14} /> {formatNota(Number(r.nota))}
                   </span>
@@ -191,5 +196,98 @@ function ReviewForm({
         {existing && <Button type="button" variant="ghost" onClick={() => setEditing(false)}>Cancelar</Button>}
       </div>
     </form>
+  )
+}
+
+type Member = { id: string; nome: string; apelido: string | null; avatar_url: string | null }
+
+function RecommendPanel({ essenceId, userId }: { essenceId: number; userId: string }) {
+  const [open, setOpen] = useState(false)
+  const [members, setMembers] = useState<Member[]>([])
+  const [selected, setSelected] = useState<string[]>([])
+  const [search, setSearch] = useState('')
+  const [mensagem, setMensagem] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [sent, setSent] = useState('')
+
+  async function openPanel() {
+    setOpen(true)
+    setSent('')
+    if (members.length) return
+    const { data } = await supabase.from('profiles').select('id, nome, apelido, avatar_url').neq('id', userId).order('nome')
+    setMembers((data ?? []) as Member[])
+  }
+
+  const label = (m: Member) => m.apelido || m.nome
+  const q = search.trim().toLowerCase()
+  const visible = q ? members.filter((m) => `${m.nome} ${m.apelido ?? ''}`.toLowerCase().includes(q)) : members
+
+  async function send() {
+    if (selected.length === 0) return setError('Escolha pelo menos uma pessoa.')
+    setBusy(true)
+    setError('')
+    const { error } = await supabase.rpc('recommend', { p_essence_id: essenceId, p_to_users: selected, p_mensagem: mensagem })
+    setBusy(false)
+    if (error) return setError(errorMessage(error))
+    const names = members.filter((m) => selected.includes(m.id)).map(label)
+    setSent(`Recomendação enviada para ${names.join(', ')}!`)
+    setSelected([])
+    setMensagem('')
+    setOpen(false)
+  }
+
+  if (!open) {
+    return (
+      <div className="flex flex-col gap-3">
+        {sent && <Alert kind="success">{sent}</Alert>}
+        <Button variant="ghost" onClick={openPanel}>Recomendar para alguém</Button>
+      </div>
+    )
+  }
+
+  return (
+    <section className="flex flex-col gap-3 rounded-2xl border border-neutral-200 p-4 dark:border-neutral-800">
+      <h2 className="text-lg font-semibold">Recomendar</h2>
+      <input
+        type="search"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Buscar membro…"
+        className="rounded-xl border border-neutral-300 bg-transparent px-4 py-2.5 outline-none focus:border-current dark:border-neutral-700"
+      />
+      <div className="flex max-h-64 flex-col overflow-y-auto">
+        {members.length === 0 && <p className="py-2 text-sm text-neutral-500">Nenhum outro membro ainda.</p>}
+        {visible.map((m) => {
+          const on = selected.includes(m.id)
+          return (
+            <label key={m.id} className="flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-900">
+              <input
+                type="checkbox"
+                checked={on}
+                onChange={() => setSelected((s) => (on ? s.filter((x) => x !== m.id) : [...s, m.id]))}
+                className="size-4 accent-black dark:accent-white"
+              />
+              <Avatar url={m.avatar_url} name={label(m)} size={28} />
+              <span className="truncate text-sm">{label(m)}</span>
+            </label>
+          )
+        })}
+      </div>
+      <textarea
+        value={mensagem}
+        onChange={(e) => setMensagem(e.target.value)}
+        rows={2}
+        placeholder="Mensagem (opcional)"
+        className="rounded-xl border border-neutral-300 bg-transparent px-4 py-3 text-sm outline-none focus:border-current dark:border-neutral-700"
+      />
+      {error && <Alert kind="error">{error}</Alert>}
+      <div className="flex gap-3">
+        <Button onClick={send} disabled={busy} className="flex-1">
+          {busy ? 'Enviando…' : selected.length > 1 ? `Enviar para ${selected.length} pessoas` : 'Enviar'}
+        </Button>
+        <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+      </div>
+    </section>
   )
 }
