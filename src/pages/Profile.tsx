@@ -84,7 +84,10 @@ export default function Profile() {
         </div>
         {profile.bio && <p className="max-w-md whitespace-pre-line text-neutral-700 dark:text-neutral-300">{profile.bio}</p>}
         {isMe && (
-          <Link to="/perfil/editar" className="rounded-xl border border-current px-4 py-2 text-sm font-semibold">Editar perfil</Link>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link to="/perfil/editar" className="rounded-xl border border-current px-4 py-2 text-sm font-semibold">Editar perfil</Link>
+            <Link to="/minhas" className="rounded-xl border border-current px-4 py-2 text-sm font-semibold">Minhas essências</Link>
+          </div>
         )}
       </section>
 

@@ -21,6 +21,7 @@ export default function MyEssences() {
 
   return (
     <div className="flex flex-col gap-4">
+      <Link to="/perfil" className="text-sm text-neutral-500">← Meu perfil</Link>
       <h1 className="text-2xl font-bold tracking-tight">Minhas essências</h1>
       {essences === null && <p className="py-10 text-center text-sm text-neutral-500">Carregando…</p>}
       {essences?.length === 0 && (

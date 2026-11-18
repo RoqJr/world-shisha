@@ -126,7 +126,6 @@ export default function Layout() {
 
         <NavLink to="/" end className={itemClass}><Icon name="home" /> Essências</NavLink>
         <NavLink to="/nova" className={itemClass}><Icon name="plus" /> Cadastrar essência</NavLink>
-        <NavLink to="/minhas" className={itemClass}><Icon name="list" /> Minhas essências</NavLink>
         <NavLink to="/rankings" className={itemClass}><Icon name="trophy" /> Rankings</NavLink>
         <NavLink to="/recomendacoes" className={itemClass}><Icon name="send" /> Recomendações</NavLink>
         <NavLink to="/membros" className={itemClass}><Icon name="users" /> Membros</NavLink>
