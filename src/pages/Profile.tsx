@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase'
 type EssenceLite = { id: number; nome: string; foto_url: string | null; brand: { nome: string } | null; essence_tags?: { tag_id: number }[] }
 type UserReview = { id: number; nota: number; observacao: string | null; updated_at: string; essence: EssenceLite | null }
 type Top = { posicao: number; essence: EssenceLite | null }
+type Achievement = { code: string; nome: string; descricao: string; icone: string; ordem: number }
 
 function mostCommon(values: string[]) {
   const counts = new Map<string, number>()
@@ -30,6 +31,8 @@ export default function Profile() {
   const [profile, setProfile] = useState<ProfileType | null | undefined>(undefined)
   const [reviews, setReviews] = useState<UserReview[]>([])
   const [top, setTop] = useState<Top[]>([])
+  const [achievements, setAchievements] = useState<Achievement[]>([])
+  const [earned, setEarned] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const essenceCols = 'id, nome, foto_url, brand:brands(nome)'
@@ -41,7 +44,11 @@ export default function Profile() {
         .eq('user_id', id)
         .order('updated_at', { ascending: false }),
       supabase.from('top5').select(`posicao, essence:essences(${essenceCols})`).eq('user_id', id).order('posicao'),
-    ]).then(([p, r, t]) => {
+      supabase.from('achievements').select('*').order('ordem'),
+      supabase.from('user_achievements').select('code').eq('user_id', id),
+    ]).then(([p, r, t, a, ua]) => {
+      setAchievements((a.data ?? []) as Achievement[])
+      setEarned(new Set((ua.data ?? []).map((x) => x.code as string)))
       setProfile((p.data ?? null) as ProfileType | null)
       setReviews((r.data ?? []) as unknown as UserReview[])
       setTop((t.data ?? []) as unknown as Top[])
@@ -93,6 +100,30 @@ export default function Profile() {
             <p className="mt-1 truncate text-lg font-semibold">{value}</p>
           </div>
         ))}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">
+          Conquistas <span className="text-neutral-500">({earned.size}/{achievements.length})</span>
+        </h2>
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {achievements.map((a) => {
+            const on = earned.has(a.code)
+            return (
+              <div
+                key={a.code}
+                title={a.descricao}
+                className={`flex flex-col items-center gap-1 rounded-2xl border p-3 text-center ${
+                  on ? 'border-current' : 'border-dashed border-neutral-300 opacity-40 grayscale dark:border-neutral-700'
+                }`}
+              >
+                <span className="text-2xl" aria-hidden>{a.icone}</span>
+                <span className="text-xs font-semibold leading-tight">{a.nome}</span>
+                <span className="text-[10px] leading-tight text-neutral-500">{a.descricao}</span>
+              </div>
+            )
+          })}
+        </div>
       </section>
 
       <section className="flex flex-col gap-3">

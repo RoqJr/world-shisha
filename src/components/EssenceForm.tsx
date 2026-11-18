@@ -1,6 +1,6 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { compressImage, type Brand, type EssenceFormValues, type Tag } from '../lib/data'
-import { errorMessage } from '../lib/supabase'
+import { errorMessage, supabase } from '../lib/supabase'
 import { Alert, Button, Field } from './ui'
 
 type Props = {
@@ -11,11 +11,15 @@ type Props = {
   submitLabel: string
   onSubmit: (values: EssenceFormValues) => Promise<void>
   onCancel?: () => void
+  /** Essência sendo editada (não conta como duplicada de si mesma). */
+  ignoreId?: number
 }
+
+type Similar = { id: number; nome: string; status: 'pending' | 'approved' }
 
 const NEW_BRAND = 'nova'
 
-export default function EssenceForm({ brands, tags, initial, allowNewBrand = true, submitLabel, onSubmit, onCancel }: Props) {
+export default function EssenceForm({ brands, tags, initial, allowNewBrand = true, submitLabel, onSubmit, onCancel, ignoreId }: Props) {
   const [brand, setBrand] = useState(initial ? String(initial.brandId) : '')
   const [newBrand, setNewBrand] = useState('')
   const [nome, setNome] = useState(initial?.nome ?? '')
@@ -26,6 +30,19 @@ export default function EssenceForm({ brands, tags, initial, allowNewBrand = tru
   const [processing, setProcessing] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+
+  // Procura essências com nome parecido na mesma marca (espera o usuário parar de digitar)
+  const [similar, setSimilar] = useState<Similar[]>([])
+  useEffect(() => {
+    const brandId = Number(brand)
+    if (!brandId || nome.trim().length < 3) return
+    const timer = setTimeout(async () => {
+      const { data } = await supabase.rpc('similar_essences', { p_brand_id: brandId, p_nome: nome, p_ignore_id: ignoreId ?? null })
+      setSimilar((data ?? []) as Similar[])
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [brand, nome, ignoreId])
+  const showSimilar = Number(brand) > 0 && nome.trim().length >= 3 ? similar : []
 
   useEffect(() => {
     return () => {
@@ -111,6 +128,23 @@ export default function EssenceForm({ brands, tags, initial, allowNewBrand = tru
       )}
 
       <Field label="Nome da essência" value={nome} onChange={(e) => setNome(e.target.value)} required />
+      {showSimilar.length > 0 && (
+        <div className="-mt-2 rounded-xl border border-amber-500 px-4 py-3 text-sm">
+          <p className="font-semibold text-amber-700 dark:text-amber-400">Já existe essência parecida nesta marca:</p>
+          <ul className="mt-1 list-inside list-disc">
+            {showSimilar.map((s) => (
+              <li key={s.id}>
+                {s.status === 'approved' ? (
+                  <a href={`/essencia/${s.id}`} target="_blank" rel="noreferrer" className="underline underline-offset-2">{s.nome}</a>
+                ) : (
+                  <>{s.nome} <span className="text-neutral-500">(aguardando aprovação)</span></>
+                )}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 text-neutral-500">Confira se não é a mesma antes de enviar.</p>
+        </div>
+      )}
 
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         Descrição do sabor <span className="font-normal text-neutral-500">(opcional)</span>

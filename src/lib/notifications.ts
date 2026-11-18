@@ -13,6 +13,8 @@ export type Notification = {
     mensagem?: string | null
     motivo?: string | null
     nota?: number
+    nome?: string
+    icone?: string
   }
   lida: boolean
   created_at: string

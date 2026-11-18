@@ -24,6 +24,8 @@ function describe(n: Notification): { text: ReactNode; detail?: string; to: stri
         text: <>{from} avaliou {essence}, que você recomendou{p.nota != null && <> · ★ {formatNota(Number(p.nota))}</>}</>,
         to: toEssence,
       }
+    case 'achievement':
+      return { text: <>Conquista desbloqueada: <b>{p.icone} {p.nome}</b></>, to: '/perfil' }
     default:
       return { text: 'Nova notificação', to: '/' }
   }

@@ -14,6 +14,7 @@ import MyEssences from './pages/MyEssences'
 import NewEssence from './pages/NewEssence'
 import Notifications from './pages/Notifications'
 import Profile from './pages/Profile'
+import Rankings from './pages/Rankings'
 import Recommendations from './pages/Recommendations'
 import SetPassword from './pages/SetPassword'
 
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/perfil/:id" element={<Profile />} />
             <Route path="/recomendacoes" element={<Recommendations />} />
             <Route path="/notificacoes" element={<Notifications />} />
+            <Route path="/rankings" element={<Rankings />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

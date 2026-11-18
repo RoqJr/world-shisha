@@ -57,6 +57,13 @@ function PendingItem({ essence, brands, tags, onDone }: { essence: Pending; bran
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
+  const [dupes, setDupes] = useState<{ id: number; nome: string; status: string }[]>([])
+  useEffect(() => {
+    supabase
+      .rpc('similar_essences', { p_brand_id: essence.brand_id, p_nome: essence.nome, p_ignore_id: essence.id })
+      .then(({ data }) => setDupes(data ?? []))
+  }, [essence.brand_id, essence.nome, essence.id])
+
   const tagIds = essence.essence_tags.map((et) => et.tag_id)
   const tagNames = tagIds.map((id) => tags.find((t) => t.id === id)?.nome).filter(Boolean)
 
@@ -84,6 +91,7 @@ function PendingItem({ essence, brands, tags, onDone }: { essence: Pending; bran
           allowNewBrand={false}
           initial={{ brandId: essence.brand_id, nome: essence.nome, descricao: essence.descricao, tagIds, fotoUrl: essence.foto_url }}
           submitLabel="Salvar e aprovar"
+          ignoreId={essence.id}
           onCancel={() => setMode('view')}
           onSubmit={async (values) => {
             await updateEssence(session!.user.id, essence.id, values, true)
@@ -111,6 +119,11 @@ function PendingItem({ essence, brands, tags, onDone }: { essence: Pending; bran
         </div>
       </div>
       {essence.descricao && <p className="whitespace-pre-line text-sm text-neutral-700 dark:text-neutral-300">{essence.descricao}</p>}
+      {dupes.length > 0 && (
+        <p className="rounded-xl border border-amber-500 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
+          Possível duplicada de: {dupes.map((d) => d.nome + (d.status === 'pending' ? ' (pendente)' : '')).join(', ')}
+        </p>
+      )}
 
       {mode === 'reject' && (
         <textarea
